@@ -1,6 +1,6 @@
 const UsbSerial = require('./');
 
-let serial = new UsbSerial();
+let serial = new UsbSerial(0,75);
 serial.on('data', data => {
   console.log('X', data, data.toString());
 });

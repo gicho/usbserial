@@ -43,7 +43,7 @@ function vendor_write(device, value, index) {
 }
 
 function setBaudrate(device, baud) {
-  assert(baud <= 115200);
+  assert(baud <= 6000000);
   // find the nearest supported bitrate
   let list = SupportedBaudrates.slice().sort((a, b) => Math.abs(a - baud) - Math.abs(b - baud));
   let newBaud = list[0];
@@ -61,9 +61,10 @@ function setBaudrate(device, baud) {
 }
 
 class UsbSerial extends EventEmitter {
-  constructor(port) {
+  constructor(port, baud) {
     super();
     port = port || 0;
+    baud = baud || 115200;
     let devices = findDevices(0x067b, 0x2303);
     assert(devices.length > port);
     let device = devices[port];
@@ -107,7 +108,7 @@ class UsbSerial extends EventEmitter {
       .then(() => vendor_write(device, 0, 1))
       .then(() => vendor_write(device, 1, 0))
       .then(() => vendor_write(device, 2, 0x44))
-      .then(() => setBaudrate(device, 75))
+      .then(() => setBaudrate(device, baud))
       .then(() => in_ep.startPoll())
       .then(() => this.emit('ready'))
       .catch(err => this.emit('error', err));
@@ -117,6 +118,8 @@ class UsbSerial extends EventEmitter {
     assert(data instanceof Buffer);
     this.out_ep.transfer(data);
   }
+
 };
 
 module.exports = UsbSerial;
+
